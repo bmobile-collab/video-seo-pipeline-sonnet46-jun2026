@@ -1,21 +1,33 @@
 #!/usr/bin/env python3
 """
-Amazon Video Pipeline -- Layer 1: Download + Audio Extraction
+Amazon Video Pipeline — Layer 1: Download + Audio Extraction
+============================================================
+Accepts any Amazon video URL (Live, VDP, Sponsored Brand)
+Downloads best quality video + extracts audio-only MP3
+Organizes output by video ID into a structured folder
+
+Usage:
+  python layer1_download.py <amazon_url>
+  python layer1_download.py <amazon_url> --audio-only
+  python layer1_download.py urls.txt             (batch mode)
+
+Output structure:
+  downloads/
+    <video_id>/
+      video.mp4
+      audio.mp3
+      meta.json
 """
 
 import subprocess
 import sys
 import os
-import io
 import json
 import re
 import argparse
 from datetime import datetime
 from pathlib import Path
 
-# Force UTF-8 output so Windows cp1252 never chokes on our print statements
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 OUTPUT_DIR = Path("downloads")
 
@@ -37,7 +49,7 @@ def sanitize_id(url: str) -> str:
 
 def get_formats(url: str) -> list:
     cmd = ["yt-dlp", "--list-formats", "--no-warnings", url]
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+    result = subprocess.run(cmd, capture_output=True, text=True)
     lines = result.stdout.splitlines()
     formats = []
     for line in lines:
@@ -72,10 +84,10 @@ def download_video(url: str, out_dir: Path, fmt_id: str) -> Path:
         "-o", str(out_path),
         url,
     ]
-    print(f"  [DL] Downloading format {fmt_id}...")
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+    print(f"  ⬇  Downloading format {fmt_id}...")
+    result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        print(f"  [WARN] yt-dlp error: {result.stderr[:300]}")
+        print(f"  ⚠  yt-dlp error: {result.stderr[:300]}")
         return None
     return out_path
 
@@ -92,10 +104,10 @@ def extract_audio(video_path: Path, out_dir: Path) -> Path:
         str(audio_path),
         "-loglevel", "error",
     ]
-    print(f"  [AUDIO] Extracting audio...")
-    result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+    print(f"  🎵  Extracting audio...")
+    result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
-        print(f"  [WARN] ffmpeg error: {result.stderr[:300]}")
+        print(f"  ⚠  ffmpeg error: {result.stderr[:300]}")
         return None
     return audio_path
 
@@ -115,7 +127,7 @@ def save_meta(out_dir: Path, url: str, video_id: str, formats: list, video_path:
         "next_step": "layer2_transcribe.py"
     }
     meta_path = out_dir / "meta.json"
-    meta_path.write_text(json.dumps(meta, indent=2), encoding='utf-8')
+    meta_path.write_text(json.dumps(meta, indent=2))
     return meta
 
 
@@ -125,78 +137,74 @@ def process_url(url: str, audio_only: bool = False) -> dict:
         return None
 
     print(f"\n{'='*55}")
-    print(f"  URL: {url[:80]}")
+    print(f"  URL: {url[:60]}...")
     print(f"{'='*55}")
 
     video_id = sanitize_id(url)
     out_dir = OUTPUT_DIR / video_id
     out_dir.mkdir(parents=True, exist_ok=True)
-    print(f"  [DIR] Output folder: {out_dir}")
+    print(f"  📁  Output folder: {out_dir}")
 
-    print(f"  [SCAN] Detecting available formats...")
+    print(f"  🔍  Detecting available formats...")
     formats = get_formats(url)
     if formats:
-        print(f"  [OK] Found {len(formats)} formats -- best: {formats[0]['resolution']} @ {formats[0]['tbr']}kbps")
+        print(f"  ✅  Found {len(formats)} formats — best: {formats[0]['resolution']} @ {formats[0]['tbr']}kbps ({formats[0]['filesize']})")
     else:
-        print(f"  [WARN] Could not detect formats, trying 'best'")
+        print(f"  ⚠  Could not detect formats, trying 'best'")
 
     fmt_id = best_format_id(formats)
     video_path = download_video(url, out_dir, fmt_id)
     if not video_path or not video_path.exists():
-        print(f"  [ERR] Download failed")
+        print(f"  ❌  Download failed")
         return {"status": "failed", "video_id": video_id, "url": url}
 
     size_mb = video_path.stat().st_size / 1024 / 1024
-    print(f"  [OK] Video saved: {size_mb:.1f} MB")
+    print(f"  ✅  Video saved: {size_mb:.1f} MB")
 
     audio_path = extract_audio(video_path, out_dir)
     if audio_path and audio_path.exists():
         audio_mb = audio_path.stat().st_size / 1024 / 1024
-        print(f"  [OK] Audio saved: {audio_mb:.2f} MB")
+        print(f"  ✅  Audio saved: {audio_mb:.2f} MB")
     else:
-        print(f"  [WARN] Audio extraction failed")
+        print(f"  ⚠  Audio extraction failed")
 
     if audio_only and video_path.exists():
         video_path.unlink()
-        print(f"  [DEL] Video removed (audio-only mode)")
+        print(f"  🗑  Video removed (audio-only mode)")
         video_path = None
 
     meta = save_meta(out_dir, url, video_id, formats, video_path, audio_path)
-    print(f"  [OK] Meta saved -- ready for Layer 2 transcription")
+    print(f"  📋  Meta saved → ready for Layer 2 transcription")
     return meta
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Amazon Video Pipeline -- Layer 1")
-    parser.add_argument("input", help="Amazon URL or path to .txt file with URLs")
-    parser.add_argument("output_dir", nargs="?", default=None, help="Output directory (used by Layer 5 proxy)")
+    parser = argparse.ArgumentParser(description="Amazon Video Pipeline — Layer 1")
+    parser.add_argument("input", help="Amazon URL or path to .txt file with URLs (one per line)")
     parser.add_argument("--audio-only", action="store_true", help="Delete video after audio extraction")
     args = parser.parse_args()
 
-    global OUTPUT_DIR
-    if args.output_dir:
-        OUTPUT_DIR = Path(args.output_dir)
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    OUTPUT_DIR.mkdir(exist_ok=True)
 
     if args.input.endswith(".txt") and os.path.isfile(args.input):
-        urls = Path(args.input).read_text(encoding='utf-8').splitlines()
+        urls = Path(args.input).read_text().splitlines()
         urls = [u for u in urls if u.strip() and not u.startswith("#")]
-        print(f"[LIST] Batch mode -- {len(urls)} URLs found")
+        print(f"📋  Batch mode — {len(urls)} URLs found")
         results = []
         for i, url in enumerate(urls, 1):
             print(f"\n[{i}/{len(urls)}]")
             result = process_url(url, args.audio_only)
             results.append(result)
         summary = OUTPUT_DIR / "batch_summary.json"
-        summary.write_text(json.dumps(results, indent=2), encoding='utf-8')
-        print(f"\n[OK] Batch complete. Summary -> {summary}")
+        summary.write_text(json.dumps(results, indent=2))
+        print(f"\n✅  Batch complete. Summary → {summary}")
     else:
         result = process_url(args.input, args.audio_only)
         if result and result.get("status") != "failed":
-            print(f"\n[OK] Layer 1 complete for {result['video_id']}")
+            print(f"\n✅  Layer 1 complete for {result['video_id']}")
             print(f"    Next: python layer2_transcribe.py {result['video_id']}")
         else:
-            print(f"\n[ERR] Layer 1 failed")
+            print(f"\n❌  Layer 1 failed")
             sys.exit(1)
 
 
