@@ -1,0 +1,24 @@
+[
+  {
+    "job_id": "9f8524c8-9ad7-4cec-a442-a510f2f12569",
+    "brand": "Milerong",
+    "video_url": "https://www.amazon.com/vdp/0a6a45210fc14d0a876f84c363796bf4?aci=amzn1.vse.video.0a6a45210fc14d0a876f84c363796bf4&product=B0F2HNX17T&ref=cm_sw_cp_r_ib_dt_wYDB5Rn4FhIRa",
+    "product_url": "https://www.amazon.com/dp/B0F2HNX17T",
+    "run_label": "Milerong_20260609_131645",
+    "result": null,
+    "status": "error",
+    "error": "Layer 1 failed (exit 1)",
+    "finished_at": "2026-06-09T13:16:45.305265"
+  },
+  {
+    "job_id": "9c03627f-18a0-48c7-8b99-8654fbd89c24",
+    "brand": "Milerong",
+    "video_url": "https://www.amazon.com/vdp/0a6a45210fc14d0a876f84c363796bf4?aci=amzn1.vse.video.0a6a45210fc14d0a876f84c363796bf4&product=B0F2HNX17T&ref=cm_sw_cp_r_ib_dt_K5DIcATuFaTDo",
+    "product_url": "https://www.amazon.com/dp/B0F2HNX17T",
+    "run_label": "Milerong_20260609_130400",
+    "result": null,
+    "status": "error",
+    "error": "Layer 1 failed (exit 2)",
+    "finished_at": "2026-06-09T13:04:00.825034"
+  }
+]

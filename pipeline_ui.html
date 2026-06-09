@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video SEO Pipeline — Layer 5</title>
+<style>
+  /* ── Reset & Tokens ─────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base:    #0d0f14;
+    --bg-surface: #161921;
+    --bg-card:    #1e2230;
+    --bg-input:   #12151d;
+    --border:     #2a2f3f;
+    --border-lit: #3d4460;
+
+    --accent:     #4f8aff;
+    --accent-dim: #2d5ab5;
+    --accent-glow:rgba(79,138,255,.18);
+
+    --gold:       #f5a623;
+    --green:      #3ecf8e;
+    --red:        #e05252;
+    --amber:      #f5c842;
+
+    --text-primary:   #e8ecf4;
+    --text-secondary: #8892aa;
+    --text-muted:     #4e5669;
+
+    --font-ui:   'Inter', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 16px;
+
+    --shadow-card: 0 2px 12px rgba(0,0,0,.45);
+    --shadow-glow: 0 0 24px var(--accent-glow);
+  }
+
+  html, body { height: 100%; background: var(--bg-base); color: var(--text-primary); font-family: var(--font-ui); font-size: 14px; line-height: 1.5; }
+
+  /* ── Layout Shell ───────────────────────────────────────── */
+  .shell { display: flex; flex-direction: column; height: 100vh; }
+
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 0 24px; height: 52px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .logo { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+  .logo span { color: var(--text-secondary); font-weight: 400; }
+  .header-status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
+  .dot.ok  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot.err { background: var(--red); }
+
+  nav {
+    display: flex; gap: 2px;
+    padding: 0 24px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .nav-tab {
+    padding: 10px 16px; font-size: 12px; font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase;
+    color: var(--text-muted); cursor: pointer; border: none;
+    background: none; border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+  }
+  .nav-tab:hover { color: var(--text-secondary); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-tab.locked { opacity: .35; cursor: not-allowed; }
+
+  .content { flex: 1; overflow-y: auto; padding: 28px 24px; }
+  .screen { display: none; max-width: 820px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  /* ── Cards & Typography ─────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+  }
+  .card + .card { margin-top: 16px; }
+  .card-title { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 16px; }
+
+  h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  h2 small { font-size: 13px; font-weight: 400; color: var(--text-secondary); margin-left: 8px; }
+  p { color: var(--text-secondary); line-height: 1.65; }
+
+  /* ── Form Elements ──────────────────────────────────────── */
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; letter-spacing: .03em; }
+  label .req { color: var(--accent); margin-left: 2px; }
+  label .hint { font-weight: 400; color: var(--text-muted); margin-left: 6px; }
+
+  input[type="text"], input[type="url"], textarea, select {
+    width: 100%; padding: 9px 12px;
+    background: var(--bg-input); color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-ui); font-size: 13px;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  .char-count { font-size: 11px; color: var(--text-muted); text-align: right; margin-top: 4px; }
+
+  /* ── Buttons ────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: var(--radius-sm);
+    font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all .15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #6b9fff; box-shadow: var(--shadow-glow); }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--border); }
+  .btn-danger:hover:not(:disabled) { background: rgba(224,82,82,.1); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-row { display: flex; gap: 10px; align-items: center; margin-top: 20px; }
+
+  /* ── Status tags ────────────────────────────────────────── */
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  }
+  .tag-blue   { background: rgba(79,138,255,.15); color: var(--accent); }
+  .tag-green  { background: rgba(62,207,142,.15); color: var(--green); }
+  .tag-red    { background: rgba(224,82,82,.15);  color: var(--red); }
+  .tag-amber  { background: rgba(245,200,66,.15); color: var(--amber); }
+
+  /* ── Progress ───────────────────────────────────────────── */
+  .progress-wrap { position: relative; height: 6px; background: var(--bg-input); border-radius: 99px; overflow: hidden; margin: 12px 0; }
+  .progress-bar  { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); transition: width .4s ease; }
+  .progress-bar.done  { background: linear-gradient(90deg, #27a06e, var(--green)); }
+  .progress-bar.error { background: linear-gradient(90deg, #8a2020, var(--red)); }
+
+  .stage-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .pct-label   { font-size: 12px; color: var(--text-secondary); }
+
+  /* ── Log console ────────────────────────────────────────── */
+  .log-wrap {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    height: 260px; overflow-y: auto;
+    font-family: var(--font-mono); font-size: 11.5px; line-height: 1.7;
+    color: #7a8aa6;
+  }
+  .log-wrap .log-line { white-space: pre-wrap; word-break: break-all; }
+  .log-wrap .log-line.ok  { color: var(--green); }
+  .log-wrap .log-line.err { color: var(--red); }
+  .log-wrap .log-line.info { color: var(--accent); }
+
+  /* ── Results Dashboard ──────────────────────────────────── */
+  .result-hero {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(62,207,142,.08) 0%, rgba(79,138,255,.08) 100%);
+    border: 1px solid rgba(62,207,142,.25); border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+  }
+  .result-icon { font-size: 36px; }
+  .result-meta h3 { font-size: 17px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+  .result-meta p  { font-size: 12px; color: var(--text-secondary); }
+  .result-actions { margin-left: auto; display: flex; gap: 8px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .stat-box  {
+    background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+    text-align: center;
+  }
+  .stat-box .val  { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+  .stat-box .lbl  { font-size: 11px; color: var(--text-muted); margin-top: 2px; letter-spacing: .04em; text-transform: uppercase; }
+
+  /* ── History ────────────────────────────────────────────── */
+  .history-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-row:last-child { border-bottom: none; }
+  .history-brand { font-weight: 600; font-size: 13px; color: var(--text-primary); min-width: 120px; }
+  .history-url   { font-size: 11px; color: var(--text-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .history-date  { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .history-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 4px; border-radius: 4px; transition: color .15s; }
+  .icon-btn:hover { color: var(--accent); }
+
+  /* ── Setup screen path rows ─────────────────────────────── */
+  .path-row {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .path-row input { flex: 1; }
+  .status-check { font-size: 12px; }
+  .status-check.ok  { color: var(--green); }
+  .status-check.err { color: var(--red); }
+
+  /* ── Alerts ─────────────────────────────────────────────── */
+  .alert {
+    padding: 11px 14px; border-radius: var(--radius-sm); font-size: 12.5px;
+    display: flex; gap: 8px; align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .alert-warn { background: rgba(245,166,35,.1); border: 1px solid rgba(245,166,35,.3); color: var(--gold); }
+  .alert-err  { background: rgba(224,82,82,.1);  border: 1px solid rgba(224,82,82,.3);  color: var(--red); }
+  .alert-ok   { background: rgba(62,207,142,.1); border: 1px solid rgba(62,207,142,.3); color: var(--green); }
+
+  /* ── Dividers ───────────────────────────────────────────── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* ── Scrollbar ──────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-lit); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+  /* ── Spinner ─────────────────────────────────────────────── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.15); border-top-color: currentColor; border-radius: 50%; animation: spin .7s linear infinite; }
+
+  /* ── Pulse animation for running state ──────────────────── */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .pulsing { animation: pulse 1.6s ease-in-out infinite; }
+
+  /* ── Empty state ─────────────────────────────────────────── */
+  .empty { text-align: center; padding: 48px 0; color: var(--text-muted); }
+  .empty .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty p { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">Video SEO <span>/ Pipeline</span></div>
+    <div style="font-size:11px;color:var(--text-muted);background:var(--bg-card);padding:3px 10px;border-radius:99px;border:1px solid var(--border);">Layer 5 UI</div>
+    <div class="header-status">
+      <div class="dot" id="proxy-dot"></div>
+      <span id="proxy-label">Checking proxy…</span>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav id="main-nav">
+    <button class="nav-tab active" data-screen="setup">⚙ Setup</button>
+    <button class="nav-tab" data-screen="input">▶ New Run</button>
+    <button class="nav-tab locked" data-screen="progress" id="tab-progress">◉ Progress</button>
+    <button class="nav-tab locked" data-screen="results"  id="tab-results">✦ Results</button>
+    <button class="nav-tab" data-screen="history">☰ History</button>
+  </nav>
+
+  <div class="content">
+
+    <!-- ════════════════════════════════════════
+         SCREEN 1: SETUP
+    ════════════════════════════════════════ -->
+    <div class="screen active" id="screen-setup">
+      <h2 style="margin-bottom:6px;">Setup <small>Configure once, run forever</small></h2>
+      <p style="margin-bottom:24px;font-size:13px;">Paths and API key are stored server-side only. The API key never touches this browser.</p>
+
+      <div id="setup-alert"></div>
+
+      <div class="card">
+        <div class="card-title">Proxy Connection</div>
+        <div id="setup-proxy-status" class="alert alert-warn">⏳ Checking connection to local proxy on port 5050…</div>
+        <p style="font-size:12px;color:var(--text-muted);">The proxy must be running (<code>python proxy.py</code> or the launcher .bat) before you can start runs. API key is loaded there, not here.</p>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">Pipeline Directory</div>
+        <div class="field">
+          <label>Pipeline scripts root <span class="hint">(where layer1–4 scripts live)</span></label>
+          <div class="path-row">
+            <input type="text" id="cfg-pipeline-dir" placeholder="C:\Users\Baruch\Desktop\Video-seo-4LYRS">
+            <span class="status-check" id="chk-pipeline"></span>
+          </div>
+        </div>
+        <div class="field">
+          <label>ffmpeg bin directory</label>
+          <div class="path-row">
+            <input type="text" id="cfg-ffmpeg-dir" placeholder="C:\Users\Baruch\Desktop\ffmpeg-8.1.1-essentials_build\bin">
+            <span class="status-check" id="chk-ffmpeg"></span>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="saveConfig()">Save Paths</button>
+          <button class="btn btn-ghost" onclick="loadConfig()">Reload from server</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">API Key</div>
+        <div class="alert alert-ok">🔒 The Anthropic API key is loaded server-side from the <code>.env</code> file in your pipeline directory. It is never sent to or stored in this browser. To change it, edit <code>.env</code> and restart the proxy.</div>
+        <p style="font-size:12px;color:var(--text-muted);">Format: <code>ANTHROPIC_API_KEY=sk-ant-…</code> in <code>.env</code></p>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 2: URL INPUT
+    ════════════════════════════════════════ -->
+    <div class="screen" id="screen-input">
+      <h2 style="margin-bottom:6px;">New Run <small>Enter video to analyze</small></h2>
+      <p style="margin-bottom:24px;font-size:13px;">Brand name is injected into the Claude prompt and used to name output files.</p>
+
+      <div id="input-alert"></div>
+
+      <div class="card">
+        <div class="card-title">Brand</div>
+        <div class="field">
+          <label>Brand Name <span class="req">*</span> <span class="hint">letters, numbers, spaces, hyphens — max 64 chars</span></label>
+          <input type="text" id="f-brand" placeholder="e.g. Lanaak" maxlength="64"
+                 oninput="updateCharCount(this,'brand-count',64)">
+          <div class="char-count" id="brand-count">0 / 64</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Video Target</div>
+        <div class="field">
+          <label>Video URL <span class="req">*</span> <span class="hint">YouTube, Amazon Live, or any yt-dlp-supported URL</span></label>
+          <input type="url" id="f-video-url" placeholder="https://www.youtube.com/watch?v=…">
+        </div>
+        <div class="field">
+          <label>Amazon Product URL <span class="hint">optional — used for context in analysis</span></label>
+          <input type="url" id="f-product-url" placeholder="https://www.amazon.com/dp/…">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Notes</div>
+        <div class="field">
+          <label>Analysis Notes <span class="hint">optional — extra context for Claude (max 500 chars)</span></label>
+          <textarea id="f-notes" maxlength="500" placeholder="e.g. Focus on pain points around kids learning to fish, look for any gift angle, competitor is XYZ brand."
+                    oninput="updateCharCount(this,'notes-count',500)"></textarea>
+          <div class="char-count" id="notes-count">0 / 500</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-run" onclick="startRun()">
+          <span class="spinner" id="run-spinner" style="display:none;"></span>
+          ▶ Run Pipeline
+        </button>
+        <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+        <span id="run-error" style="color:var(--red);font-size:12px;"></span>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 3: LIVE PROGRESS
+    ════════════════════════════════════════ -->
+    <div class="screen" id="screen-progress">
+      <h2 style="margin-bottom:6px;">Live Progress</h2>
+      <p style="margin-bottom:20px;font-size:13px;">Pipeline running — do not close this window.</p>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div>
+            <div class="stage-label" id="prog-stage">Queued…</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;" id="prog-brand"></div>
+          </div>
+          <div class="pct-label" id="prog-pct">0%</div>
+        </div>
+
+        <!-- Layer indicator row -->
+        <div style="display:flex;gap:6px;margin-bottom:14px;" id="layer-indicators">
+          <div class="tag tag-amber" id="li-1">① Download</div>
+          <div class="tag" id="li-2" style="background:var(--bg-input);color:var(--text-muted);">② Transcribe</div>
+          <div class="tag" id="li-3" style="background:var(--bg-input);color:var(--text-muted);">③ Analyze</div>
+          <div class="tag" id="li-4" style="background:var(--bg-input);color:var(--text-muted);">④ Export</div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-bar" id="prog-bar" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="card-title" style="margin:0;">Live Log</div>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;" onclick="clearLog()">Clear</button>
+        </div>
+        <div class="log-wrap" id="log-console"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="goToScreen('input')">← New Run</button>
+        <span id="prog-done-msg" style="font-size:13px;color:var(--green);display:none;">✓ Done — switching to Results…</span>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 4: RESULTS DASHBOARD
+    ════════════════════════════════════════ -->
+    <div class="screen" id="screen-results">
+      <h2 style="margin-bottom:20px;">Results Dashboard</h2>
+
+      <div id="results-hero"></div>
+
+      <div class="card" id="results-stats-card" style="display:none;">
+        <div class="card-title">Run Summary</div>
+        <div class="stat-grid" id="results-stats"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;" id="results-log-card" style="display:none;">
+        <div class="card-title">Run Log</div>
+        <div class="log-wrap" id="results-log" style="height:180px;"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goToScreen('input')">▶ New Run</button>
+        <button class="btn btn-ghost" onclick="goToScreen('history')">View History</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 5: HISTORY
+    ════════════════════════════════════════ -->
+    <div class="screen" id="screen-history">
+      <h2 style="margin-bottom:6px;">History <small>All previous runs</small></h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <p style="font-size:13px;">Click a run to load it into the Results dashboard.</p>
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:11px;" onclick="loadHistory()">↻ Refresh</button>
+      </div>
+      <div class="card" id="history-list">
+        <div class="empty"><div class="empty-icon">📂</div><p>No runs yet.</p></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /shell -->
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────────
+const PROXY = "http://127.0.0.1:5050";
+let pollTimer  = null;
+let currentJob = null;
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function goToScreen(name) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById("screen-" + name).classList.add("active");
+  const tab = document.querySelector(`[data-screen="${name}"]`);
+  if (tab && !tab.classList.contains("locked")) tab.classList.add("active");
+  if (name === "history") loadHistory();
+}
+
+document.querySelectorAll(".nav-tab:not(.locked)").forEach(tab => {
+  tab.addEventListener("click", () => goToScreen(tab.dataset.screen));
+});
+
+// ── Proxy health check ────────────────────────────────────────────────────────
+async function checkProxy() {
+  const dot   = document.getElementById("proxy-dot");
+  const label = document.getElementById("proxy-label");
+  const alert = document.getElementById("setup-proxy-status");
+  try {
+    const r = await fetch(`${PROXY}/api/ping`);
+    const d = await r.json();
+    dot.classList.add("ok"); dot.classList.remove("err");
+    label.textContent = `Proxy OK — API key ${d.api_key_loaded ? "loaded ✓" : "NOT SET ✗"}`;
+    if (d.api_key_loaded) {
+      alert.className = "alert alert-ok";
+      alert.innerHTML = "✓ Proxy is running and API key is loaded. You're ready to go.";
+    } else {
+      alert.className = "alert alert-warn";
+      alert.innerHTML = "⚠ Proxy is running but <strong>ANTHROPIC_API_KEY is not set</strong>. Add it to <code>.env</code> in your pipeline folder and restart proxy.py.";
+    }
+  } catch (e) {
+    dot.classList.add("err"); dot.classList.remove("ok");
+    label.textContent = "Proxy not running";
+    alert.className = "alert alert-err";
+    alert.innerHTML = "✗ Cannot reach proxy on port 5050. Run <code>launch_pipeline.bat</code> or <code>python proxy.py</code> first.";
+  }
+}
+
+// ── Config ────────────────────────────────────────────────────────────────────
+async function loadConfig() {
+  try {
+    const r = await fetch(`${PROXY}/api/config`);
+    const d = await r.json();
+    document.getElementById("cfg-pipeline-dir").value = d.pipeline_dir || "";
+    document.getElementById("cfg-ffmpeg-dir").value   = d.ffmpeg_dir   || "";
+    document.getElementById("chk-pipeline").textContent = "✓";
+    document.getElementById("chk-pipeline").className  = "status-check ok";
+    document.getElementById("chk-ffmpeg").textContent  = d.ffmpeg_dir ? "✓" : "";
+    document.getElementById("chk-ffmpeg").className    = "status-check ok";
+  } catch(e) { /* proxy not up */ }
+}
+
+async function saveConfig() {
+  const payload = {
+    pipeline_dir: document.getElementById("cfg-pipeline-dir").value.trim(),
+    ffmpeg_dir:   document.getElementById("cfg-ffmpeg-dir").value.trim(),
+  };
+  try {
+    const r = await fetch(`${PROXY}/api/config`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    const a = document.getElementById("setup-alert");
+    if (d.ok) {
+      a.innerHTML = `<div class="alert alert-ok">✓ Saved: ${d.updated.join(", ")}</div>`;
+    } else {
+      a.innerHTML = `<div class="alert alert-err">✗ ${d.error}</div>`;
+    }
+    setTimeout(() => a.innerHTML = "", 4000);
+  } catch(e) {
+    document.getElementById("setup-alert").innerHTML =
+      `<div class="alert alert-err">✗ Could not reach proxy.</div>`;
+  }
+}
+
+// ── Form helpers ──────────────────────────────────────────────────────────────
+function updateCharCount(el, countId, max) {
+  document.getElementById(countId).textContent = `${el.value.length} / ${max}`;
+}
+
+function clearForm() {
+  ["f-brand","f-video-url","f-product-url","f-notes"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("brand-count").textContent = "0 / 64";
+  document.getElementById("notes-count").textContent = "0 / 500";
+  document.getElementById("run-error").textContent = "";
+}
+
+// ── Start run ─────────────────────────────────────────────────────────────────
+async function startRun() {
+  const brand       = document.getElementById("f-brand").value.trim();
+  const videoUrl    = document.getElementById("f-video-url").value.trim();
+  const productUrl  = document.getElementById("f-product-url").value.trim();
+  const notes       = document.getElementById("f-notes").value.trim();
+  const errEl       = document.getElementById("run-error");
+
+  errEl.textContent = "";
+  if (!brand)    { errEl.textContent = "Brand name is required."; return; }
+  if (!videoUrl) { errEl.textContent = "Video URL is required.";  return; }
+
+  // Basic URL check
+  try { new URL(videoUrl); } catch { errEl.textContent = "Video URL is not valid."; return; }
+  if (productUrl) {
+    try { new URL(productUrl); } catch { errEl.textContent = "Product URL is not valid."; return; }
+  }
+
+  const spinner = document.getElementById("run-spinner");
+  const btn     = document.getElementById("btn-run");
+  btn.disabled  = true; spinner.style.display = "inline-block";
+
+  try {
+    const r = await fetch(`${PROXY}/api/run`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ brand, video_url: videoUrl, product_url: productUrl, notes }),
+    });
+    const d = await r.json();
+    if (!r.ok || d.error) { throw new Error(d.error || `HTTP ${r.status}`); }
+
+    currentJob = d.job_id;
+    startPolling(currentJob, brand);
+    unlockTab("tab-progress");
+    goToScreen("progress");
+
+    // Seed the progress screen
+    document.getElementById("prog-brand").textContent = `Brand: ${brand}`;
+    document.getElementById("prog-stage").textContent = "Starting…";
+    document.getElementById("log-console").innerHTML  = "";
+
+  } catch(e) {
+    errEl.textContent = "Error: " + e.message;
+  } finally {
+    btn.disabled = false; spinner.style.display = "none";
+  }
+}
+
+// ── Polling ───────────────────────────────────────────────────────────────────
+function startPolling(jobId, brand) {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(() => pollJob(jobId), 1500);
+}
+
+let lastLogCount = 0;
+async function pollJob(jobId) {
+  try {
+    const r = await fetch(`${PROXY}/api/status/${jobId}`);
+    if (!r.ok) return;
+    const job = await r.json();
+
+    // Update progress bar
+    const bar = document.getElementById("prog-bar");
+    bar.style.width = job.progress + "%";
+    document.getElementById("prog-pct").textContent = job.progress + "%";
+    document.getElementById("prog-stage").textContent = job.stage || "Running…";
+    if (job.status === "done")  { bar.className = "progress-bar done"; }
+    if (job.status === "error") { bar.className = "progress-bar error"; }
+
+    // Update layer indicators
+    updateLayerIndicators(job.progress, job.status);
+
+    // Append new log lines
+    const logEl = document.getElementById("log-console");
+    const lines  = job.log || [];
+    if (lines.length > lastLogCount) {
+      lines.slice(lastLogCount).forEach(line => {
+        const div = document.createElement("div");
+        div.className = "log-line " + classifyLine(line);
+        div.textContent = line;
+        logEl.appendChild(div);
+      });
+      logEl.scrollTop = logEl.scrollHeight;
+      lastLogCount = lines.length;
+    }
+
+    if (job.status === "done" || job.status === "error") {
+      clearInterval(pollTimer);
+      pollTimer = null;
+      lastLogCount = 0;
+
+      if (job.status === "done") {
+        document.getElementById("prog-done-msg").style.display = "inline";
+        unlockTab("tab-results");
+        populateResults(job);
+        setTimeout(() => goToScreen("results"), 1800);
+      }
+    }
+
+  } catch(e) { /* transient */ }
+}
+
+function classifyLine(line) {
+  if (line.includes("✓") || line.includes("complete") || line.includes("done")) return "ok";
+  if (line.includes("✗") || line.includes("ERROR")  || line.includes("failed")) return "err";
+  if (line.includes("Layer") || line.includes("→")) return "info";
+  return "";
+}
+
+function updateLayerIndicators(pct, status) {
+  const stages = [
+    { id: "li-1", min: 0,   max: 25  },
+    { id: "li-2", min: 25,  max: 55  },
+    { id: "li-3", min: 55,  max: 80  },
+    { id: "li-4", min: 80,  max: 100 },
+  ];
+  stages.forEach(s => {
+    const el = document.getElementById(s.id);
+    if (pct >= s.max || (status === "done" && s.max === 100)) {
+      el.className = "tag tag-green";
+    } else if (pct >= s.min && pct < s.max) {
+      el.className = "tag tag-amber pulsing";
+    } else {
+      el.className = "tag"; el.style.background = "var(--bg-input)"; el.style.color = "var(--text-muted)";
+    }
+  });
+}
+
+function clearLog() { document.getElementById("log-console").innerHTML = ""; }
+
+// ── Results ───────────────────────────────────────────────────────────────────
+function populateResults(job) {
+  const meta = job.meta || {};
+  const hero = document.getElementById("results-hero");
+  const isOk = job.status === "done";
+
+  if (isOk) {
+    hero.innerHTML = `
+      <div class="result-hero">
+        <div class="result-icon">✅</div>
+        <div class="result-meta">
+          <h3>Pipeline complete — ${meta.brand || "Unknown Brand"}</h3>
+          <p>${meta.video_url || ""}</p>
+          ${job.result ? `<p style="margin-top:4px;font-size:11px;color:var(--text-muted);">Output: ${job.result}</p>` : ""}
+        </div>
+        <div class="result-actions">
+          ${job.result ? `<button class="btn btn-primary" onclick="openOutput('${escAttr(job.result)}')">📂 Open in Explorer</button>` : ""}
+          <button class="btn btn-ghost" onclick="goToScreen('input')">▶ New Run</button>
+        </div>
+      </div>`;
+  } else {
+    hero.innerHTML = `
+      <div class="alert alert-err">
+        ✗ Pipeline failed for <strong>${meta.brand || ""}</strong>: ${job.error || "Unknown error"}
+      </div>`;
+  }
+
+  // Stats
+  const statsCard = document.getElementById("results-stats-card");
+  const statsEl   = document.getElementById("results-stats");
+  const logCount  = (job.log || []).length;
+  const duration  = "—";
+  statsCard.style.display = "block";
+  statsEl.innerHTML = `
+    <div class="stat-box"><div class="val">${logCount}</div><div class="lbl">Log Lines</div></div>
+    <div class="stat-box"><div class="val">${job.progress}%</div><div class="lbl">Progress</div></div>
+    <div class="stat-box"><div class="val tag ${isOk ? "tag-green" : "tag-red"}" style="display:inline-block;font-size:13px;">${isOk ? "Done" : "Error"}</div><div class="lbl">Status</div></div>`;
+
+  // Log
+  const logCard = document.getElementById("results-log-card");
+  const logEl   = document.getElementById("results-log");
+  logCard.style.display = "block";
+  logEl.innerHTML = "";
+  (job.log || []).forEach(line => {
+    const div = document.createElement("div");
+    div.className = "log-line " + classifyLine(line);
+    div.textContent = line;
+    logEl.appendChild(div);
+  });
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+async function openOutput(path) {
+  try {
+    await fetch(`${PROXY}/api/open-output`, {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ path }),
+    });
+  } catch(e) { alert("Could not open folder: " + e.message); }
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  const container = document.getElementById("history-list");
+  try {
+    const r = await fetch(`${PROXY}/api/history`);
+    const rows = await r.json();
+    if (!rows.length) {
+      container.innerHTML = `<div class="empty"><div class="empty-icon">📂</div><p>No runs yet. Start your first run from the New Run tab.</p></div>`;
+      return;
+    }
+    container.innerHTML = rows.map(row => {
+      const isOk   = row.status === "done";
+      const date   = row.finished_at ? new Date(row.finished_at).toLocaleString() : "—";
+      const label  = isOk ? `<span class="tag tag-green">Done</span>` : `<span class="tag tag-red">Error</span>`;
+      return `
+        <div class="history-row">
+          <div class="history-brand">${esc(row.brand || "—")}</div>
+          <div class="history-url">${esc(row.video_url || "")}</div>
+          ${label}
+          <div class="history-date">${date}</div>
+          <div class="history-actions">
+            ${row.result ? `<button class="icon-btn" title="Open in Explorer" onclick="openOutput('${escAttr(row.result)}')">📂</button>` : ""}
+          </div>
+        </div>`;
+    }).join("");
+  } catch(e) {
+    container.innerHTML = `<div class="empty"><p>Could not load history — is the proxy running?</p></div>`;
+  }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function unlockTab(id) {
+  const tab = document.getElementById(id);
+  if (tab) tab.classList.remove("locked");
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function escAttr(str) {
+  return String(str).replace(/'/g,"&#39;").replace(/"/g,"&quot;");
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+(async function boot() {
+  await checkProxy();
+  await loadConfig();
+  // Re-check proxy every 30s
+  setInterval(checkProxy, 30000);
+})();
+</script>
+</body>
+</html>

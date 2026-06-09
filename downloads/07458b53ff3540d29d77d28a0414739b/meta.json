@@ -1,0 +1,40 @@
+{
+  "video_id": "07458b53ff3540d29d77d28a0414739b",
+  "url": "https://www.amazon.com/vdp/07458b53ff3540d29d77d28a0414739b?aci=amzn1.vse.video.07458b53ff3540d29d77d28a0414739b&product=B08CV69V9G&ref=cm_sw_cp_r_ib_dt_qmNWd03mrt6pW",
+  "downloaded_at": "2026-06-09T10:34:59.925171Z",
+  "formats_available": [],
+  "selected_format": null,
+  "files": {
+    "video": "downloads\\07458b53ff3540d29d77d28a0414739b\\video.mp4",
+    "audio": "downloads\\07458b53ff3540d29d77d28a0414739b\\audio.mp3"
+  },
+  "status": "complete",
+  "next_step": "pipeline complete",
+  "transcription": {
+    "status": "complete",
+    "model": "base",
+    "transcribed_at": "2026-06-09T10:36:57.793294Z",
+    "word_count": 213,
+    "duration_seconds": 80.56,
+    "files": {
+      "txt": "downloads\\07458b53ff3540d29d77d28a0414739b\\transcript.txt",
+      "srt": "downloads\\07458b53ff3540d29d77d28a0414739b\\transcript.srt",
+      "json": "downloads\\07458b53ff3540d29d77d28a0414739b\\transcript.json"
+    }
+  },
+  "analysis": {
+    "status": "complete",
+    "analyzed_at": "2026-06-09T10:45:49.624076Z",
+    "model": "claude-sonnet-4-5",
+    "files": {
+      "analysis_json": "downloads\\07458b53ff3540d29d77d28a0414739b\\analysis.json",
+      "analysis_txt": "downloads\\07458b53ff3540d29d77d28a0414739b\\analysis.txt",
+      "listing_copy": "downloads\\07458b53ff3540d29d77d28a0414739b\\listing_copy.txt"
+    }
+  },
+  "export": {
+    "status": "complete",
+    "exported_at": "2026-06-09T11:33:06.760051Z",
+    "file": "downloads\\07458b53ff3540d29d77d28a0414739b\\intelligence_report_20260609_1433.xlsx"
+  }
+}

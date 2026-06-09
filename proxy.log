@@ -1,0 +1,72 @@
+2026-06-09 16:00:43,157 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5050
+2026-06-09 16:00:43,157 [INFO] [33mPress CTRL+C to quit[0m
+2026-06-09 16:00:45,818 [INFO] 127.0.0.1 - - [09/Jun/2026 16:00:45] "GET / HTTP/1.1" 200 -
+2026-06-09 16:00:45,856 [INFO] 127.0.0.1 - - [09/Jun/2026 16:00:45] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:00:46,001 [INFO] 127.0.0.1 - - [09/Jun/2026 16:00:46] "GET /api/config HTTP/1.1" 200 -
+2026-06-09 16:00:46,037 [INFO] 127.0.0.1 - - [09/Jun/2026 16:00:46] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2026-06-09 16:01:01,670 [INFO] 127.0.0.1 - - [09/Jun/2026 16:01:01] "POST /api/config HTTP/1.1" 200 -
+2026-06-09 16:01:16,048 [INFO] 127.0.0.1 - - [09/Jun/2026 16:01:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:01:46,058 [INFO] 127.0.0.1 - - [09/Jun/2026 16:01:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:02:16,058 [INFO] 127.0.0.1 - - [09/Jun/2026 16:02:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:02:46,063 [INFO] 127.0.0.1 - - [09/Jun/2026 16:02:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:03:16,043 [INFO] 127.0.0.1 - - [09/Jun/2026 16:03:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:03:46,072 [INFO] 127.0.0.1 - - [09/Jun/2026 16:03:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:04:00,652 [INFO] Queued job 9c03627f for brand='Milerong'
+2026-06-09 16:04:00,652 [INFO] [job 9c03627f] Starting pipeline for brand: Milerong
+2026-06-09 16:04:00,654 [INFO] 127.0.0.1 - - [09/Jun/2026 16:04:00] "[35m[1mPOST /api/run HTTP/1.1[0m" 202 -
+2026-06-09 16:04:00,654 [INFO] [job 9c03627f] Video URL: https://www.amazon.com/vdp/0a6a45210fc14d0a876f84c363796bf4?aci=amzn1.vse.video.0a6a45210fc14d0a876f84c363796bf4&product=B0F2HNX17T&ref=cm_sw_cp_r_ib_dt_K5DIcATuFaTDo
+2026-06-09 16:04:00,657 [INFO] [job 9c03627f] Layer 1 → Downloading video…
+2026-06-09 16:04:00,823 [INFO] [job 9c03627f] [stderr] usage: layer1_download.py [-h] [--audio-only] input
+2026-06-09 16:04:00,823 [INFO] [job 9c03627f] [stderr] layer1_download.py: error: unrecognized arguments: C:\Users\Baruch\Desktop\Video-seo-4LYRS\outputs\Milerong_20260609_130400
+2026-06-09 16:04:00,824 [INFO] [job 9c03627f] ✗ ERROR: Layer 1 failed (exit 2)
+2026-06-09 16:04:02,176 [INFO] 127.0.0.1 - - [09/Jun/2026 16:04:02] "GET /api/status/9c03627f-18a0-48c7-8b99-8654fbd89c24 HTTP/1.1" 200 -
+2026-06-09 16:04:16,035 [INFO] 127.0.0.1 - - [09/Jun/2026 16:04:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:04:46,047 [INFO] 127.0.0.1 - - [09/Jun/2026 16:04:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:05:16,045 [INFO] 127.0.0.1 - - [09/Jun/2026 16:05:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:05:46,060 [INFO] 127.0.0.1 - - [09/Jun/2026 16:05:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:06:16,042 [INFO] 127.0.0.1 - - [09/Jun/2026 16:06:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:06:46,035 [INFO] 127.0.0.1 - - [09/Jun/2026 16:06:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:07:16,036 [INFO] 127.0.0.1 - - [09/Jun/2026 16:07:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:07:46,049 [INFO] 127.0.0.1 - - [09/Jun/2026 16:07:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:08:16,043 [INFO] 127.0.0.1 - - [09/Jun/2026 16:08:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:08:46,038 [INFO] 127.0.0.1 - - [09/Jun/2026 16:08:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:09:16,039 [INFO] 127.0.0.1 - - [09/Jun/2026 16:09:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:09:46,045 [INFO] 127.0.0.1 - - [09/Jun/2026 16:09:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:10:16,049 [INFO] 127.0.0.1 - - [09/Jun/2026 16:10:16] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:10:46,049 [INFO] 127.0.0.1 - - [09/Jun/2026 16:10:46] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:15:52,584 [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5050
+2026-06-09 16:15:52,585 [INFO] [33mPress CTRL+C to quit[0m
+2026-06-09 16:15:54,738 [INFO] 127.0.0.1 - - [09/Jun/2026 16:15:54] "[36mGET / HTTP/1.1[0m" 304 -
+2026-06-09 16:15:54,874 [INFO] 127.0.0.1 - - [09/Jun/2026 16:15:54] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:15:54,897 [INFO] 127.0.0.1 - - [09/Jun/2026 16:15:54] "GET /api/config HTTP/1.1" 200 -
+2026-06-09 16:15:58,555 [INFO] 127.0.0.1 - - [09/Jun/2026 16:15:58] "POST /api/config HTTP/1.1" 200 -
+2026-06-09 16:16:24,933 [INFO] 127.0.0.1 - - [09/Jun/2026 16:16:24] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:16:45,110 [INFO] Queued job 9f8524c8 for brand='Milerong'
+2026-06-09 16:16:45,110 [INFO] [job 9f8524c8] Starting pipeline for brand: Milerong
+2026-06-09 16:16:45,111 [INFO] 127.0.0.1 - - [09/Jun/2026 16:16:45] "[35m[1mPOST /api/run HTTP/1.1[0m" 202 -
+2026-06-09 16:16:45,112 [INFO] [job 9f8524c8] Video URL: https://www.amazon.com/vdp/0a6a45210fc14d0a876f84c363796bf4?aci=amzn1.vse.video.0a6a45210fc14d0a876f84c363796bf4&product=B0F2HNX17T&ref=cm_sw_cp_r_ib_dt_wYDB5Rn4FhIRa
+2026-06-09 16:16:45,115 [INFO] [job 9f8524c8] Layer 1 → Downloading video…
+2026-06-09 16:16:45,298 [INFO] [job 9f8524c8] =======================================================
+2026-06-09 16:16:45,298 [INFO] [job 9f8524c8] URL: https://www.amazon.com/vdp/0a6a45210fc14d0a876f84c363796bf4?...
+2026-06-09 16:16:45,299 [INFO] [job 9f8524c8] =======================================================
+2026-06-09 16:16:45,300 [INFO] [job 9f8524c8] [stderr] Traceback (most recent call last):
+2026-06-09 16:16:45,300 [INFO] [job 9f8524c8] [stderr] File "C:\Users\Baruch\Desktop\Video-seo-4LYRS\layer1_download.py", line 216, in <module>
+2026-06-09 16:16:45,300 [INFO] [job 9f8524c8] [stderr] main()
+2026-06-09 16:16:45,301 [INFO] [job 9f8524c8] [stderr] File "C:\Users\Baruch\Desktop\Video-seo-4LYRS\layer1_download.py", line 206, in main
+2026-06-09 16:16:45,301 [INFO] [job 9f8524c8] [stderr] result = process_url(args.input, args.audio_only)
+2026-06-09 16:16:45,301 [INFO] [job 9f8524c8] [stderr] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-06-09 16:16:45,302 [INFO] [job 9f8524c8] [stderr] File "C:\Users\Baruch\Desktop\Video-seo-4LYRS\layer1_download.py", line 146, in process_url
+2026-06-09 16:16:45,302 [INFO] [job 9f8524c8] [stderr] print(f"  \U0001f4c1  Output folder: {out_dir}")
+2026-06-09 16:16:45,303 [INFO] [job 9f8524c8] [stderr] File "C:\Users\Baruch\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 19, in encode
+2026-06-09 16:16:45,303 [INFO] [job 9f8524c8] [stderr] return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+2026-06-09 16:16:45,303 [INFO] [job 9f8524c8] [stderr] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-06-09 16:16:45,304 [INFO] [job 9f8524c8] [stderr] UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4c1' in position 2: character maps to <undefined>
+2026-06-09 16:16:45,304 [INFO] [job 9f8524c8] ✗ ERROR: Layer 1 failed (exit 1)
+2026-06-09 16:16:46,635 [INFO] 127.0.0.1 - - [09/Jun/2026 16:16:46] "GET /api/status/9f8524c8-9ad7-4cec-a442-a510f2f12569 HTTP/1.1" 200 -
+2026-06-09 16:16:54,928 [INFO] 127.0.0.1 - - [09/Jun/2026 16:16:54] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:17:24,929 [INFO] 127.0.0.1 - - [09/Jun/2026 16:17:24] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:17:54,932 [INFO] 127.0.0.1 - - [09/Jun/2026 16:17:54] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:18:24,930 [INFO] 127.0.0.1 - - [09/Jun/2026 16:18:24] "GET /api/ping HTTP/1.1" 200 -
+2026-06-09 16:18:54,924 [INFO] 127.0.0.1 - - [09/Jun/2026 16:18:54] "GET /api/ping HTTP/1.1" 200 -
